@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/game_settings.dart';
+import '../services/music_manager.dart';
 import '../utils/app_theme.dart';
 import '../widgets/fw_button.dart';
 
@@ -199,33 +200,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Sound Effects
-          _buildSettingToggle(
-            'Sound Effects',
-            'Enable game sound effects',
-            Icons.music_note_rounded,
-            _settings.soundEnabled,
-            (value) => setState(() => _settings.soundEnabled = value),
-          ),
-          const SizedBox(height: 16),
-
-          // Vibration
-          _buildSettingToggle(
-            'Vibration',
-            'Enable haptic feedback',
-            Icons.vibration_rounded,
-            _settings.vibrationEnabled,
-            (value) => setState(() => _settings.vibrationEnabled = value),
-          ),
-          const SizedBox(height: 16),
-
           // Background Music
           _buildSettingToggle(
             'Background Music',
             'Enable menu background music',
             Icons.audiotrack_rounded,
             _settings.musicEnabled,
-            (value) => setState(() => _settings.musicEnabled = value),
+            (value) async {
+              setState(() => _settings.musicEnabled = value);
+              final musicManager = MusicManager();
+              if (value) {
+                await musicManager.playBackgroundMusic(_settings);
+              } else {
+                await musicManager.stop();
+              }
+            },
           ),
         ],
       ),
@@ -259,20 +248,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          FWButton(
-            label: 'RESET TO DEFAULTS',
-            icon: Icons.restore_rounded,
-            filled: false,
-            onPressed: () async {
-              await _settings.resetToDefaults();
-              setState(() {});
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Settings reset to defaults'),
-                  backgroundColor: AppTheme.primary,
-                ),
-              );
-            },
+          // FIX: wrap in SizedBox.expand so the button fills available width
+          // and the label text doesn't overflow its bounds
+          SizedBox(
+            width: double.infinity,
+            child: FWButton(
+              label: 'RESET TO DEFAULTS',
+              icon: Icons.restore_rounded,
+              filled: false,
+              onPressed: () async {
+                await _settings.resetToDefaults();
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Settings reset to defaults'),
+                    backgroundColor: AppTheme.primary,
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

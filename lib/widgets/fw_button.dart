@@ -37,12 +37,15 @@ class FWButton extends StatelessWidget {
                 children: [
                   Icon(icon, size: 20),
                   const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
                 ],
@@ -65,12 +68,15 @@ class FWButton extends StatelessWidget {
                 children: [
                   Icon(icon, size: 20),
                   const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
+                  Flexible(
+                    child: Text(
+                      label,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
                 ],

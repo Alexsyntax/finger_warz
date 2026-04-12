@@ -2,14 +2,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class GameSettings {
   static const String _winTargetKey = 'win_target';
-  static const String _soundEnabledKey = 'sound_enabled';
-  static const String _vibrationEnabledKey = 'vibration_enabled';
   static const String _aiDifficultyKey = 'ai_difficulty';
   static const String _musicEnabledKey = 'music_enabled';
 
   static const int defaultWinTarget = 5;
-  static const bool defaultSoundEnabled = true;
-  static const bool defaultVibrationEnabled = true;
   static const bool defaultMusicEnabled = true;
   static const AIDifficulty defaultAIDifficulty = AIDifficulty.medium;
 
@@ -20,17 +16,6 @@ class GameSettings {
   // Win target (first to X wins)
   int get winTarget => _prefs.getInt(_winTargetKey) ?? defaultWinTarget;
   set winTarget(int value) => _prefs.setInt(_winTargetKey, value);
-
-  // Sound effects
-  bool get soundEnabled =>
-      _prefs.getBool(_soundEnabledKey) ?? defaultSoundEnabled;
-  set soundEnabled(bool value) => _prefs.setBool(_soundEnabledKey, value);
-
-  // Vibration
-  bool get vibrationEnabled =>
-      _prefs.getBool(_vibrationEnabledKey) ?? defaultVibrationEnabled;
-  set vibrationEnabled(bool value) =>
-      _prefs.setBool(_vibrationEnabledKey, value);
 
   // AI difficulty
   AIDifficulty get aiDifficulty {
@@ -54,8 +39,6 @@ class GameSettings {
   // Reset to defaults
   Future<void> resetToDefaults() async {
     await _prefs.setInt(_winTargetKey, defaultWinTarget);
-    await _prefs.setBool(_soundEnabledKey, defaultSoundEnabled);
-    await _prefs.setBool(_vibrationEnabledKey, defaultVibrationEnabled);
     await _prefs.setBool(_musicEnabledKey, defaultMusicEnabled);
     await _prefs.setString(_aiDifficultyKey, defaultAIDifficulty.name);
   }
