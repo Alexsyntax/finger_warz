@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
+import '../utils/fade_page_route.dart';
 import '../widgets/fw_button.dart';
 import '../services/music_manager.dart';
 import 'name_entry_screen.dart';
@@ -412,8 +413,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: GestureDetector(
         onTap: () {
           _ensureMusicPlaying();
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const NameEntryScreen()));
+          Navigator.push(context, FadePageRoute(page: const NameEntryScreen()));
         },
         child: Container(
           width: double.infinity,

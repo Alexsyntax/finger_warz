@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../utils/fade_page_route.dart';
 import '../widgets/fw_button.dart';
 import '../services/game_settings.dart';
 import '../services/music_manager.dart';
@@ -107,8 +108,8 @@ class _Player2NameEntryScreenState extends State<Player2NameEntryScreen>
     FocusScope.of(context).unfocus();
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => RulesScreen(
+      FadePageRoute(
+        page: RulesScreen(
           playerName: widget.player1Name,
           gameMode: GameMode.local,
           opponentName: name,

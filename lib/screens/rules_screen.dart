@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../utils/fade_page_route.dart';
 import '../widgets/fw_button.dart';
 import '../widgets/hand_widget.dart';
 import '../services/game_settings.dart';
@@ -338,8 +339,8 @@ class _RulesScreenState extends State<RulesScreen>
                                 icon: Icons.sports_mma_rounded,
                                 onPressed: () => Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => GameScreen(
+                                  FadePageRoute(
+                                    page: GameScreen(
                                       playerName: widget.playerName,
                                       gameMode: widget.gameMode,
                                       opponentName: widget.opponentName,

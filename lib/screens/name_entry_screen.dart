@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_theme.dart';
+import '../utils/fade_page_route.dart';
 import '../widgets/fw_button.dart';
 import '../services/game_settings.dart';
 import '../services/music_manager.dart';
@@ -109,8 +110,8 @@ class _NameEntryScreenState extends State<NameEntryScreen>
     FocusScope.of(context).unfocus();
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => OpponentSelectionScreen(
+      FadePageRoute(
+        page: OpponentSelectionScreen(
           playerName: name,
           settings: settings,
         ),

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../services/game_settings.dart';
 import '../services/music_manager.dart';
+import '../utils/fade_page_route.dart';
 import 'player2_name_entry_screen.dart';
 import 'rules_screen.dart';
 import 'settings_screen.dart';
@@ -262,10 +263,8 @@ class _OpponentSelectionScreenState extends State<OpponentSelectionScreen>
                                       Icons.settings_rounded,
                                       () => Navigator.push(
                                         context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const SettingsScreen(),
-                                        ),
+                                        FadePageRoute(
+                                            page: const SettingsScreen()),
                                       ),
                                     ),
                                   ],
@@ -352,8 +351,8 @@ class _OpponentSelectionScreenState extends State<OpponentSelectionScreen>
                                   accent: const Color(0xFF00C8FF),
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => Player2NameEntryScreen(
+                                    FadePageRoute(
+                                      page: Player2NameEntryScreen(
                                         player1Name: widget.playerName,
                                         settings: widget.settings,
                                       ),
@@ -361,7 +360,7 @@ class _OpponentSelectionScreenState extends State<OpponentSelectionScreen>
                                   ),
                                 ),
 
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 16),
 
                                 _buildModeCard(
                                   context,
@@ -372,8 +371,8 @@ class _OpponentSelectionScreenState extends State<OpponentSelectionScreen>
                                   accent: const Color(0xFFB066FF),
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) => RulesScreen(
+                                    FadePageRoute(
+                                      page: RulesScreen(
                                         playerName: widget.playerName,
                                         gameMode: GameMode.ai,
                                         settings: widget.settings,
