@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/game_settings.dart';
@@ -12,14 +13,35 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with SingleTickerProviderStateMixin {
+  static const Color _gold = Color(0xFFFFD700);
+
   late GameSettings _settings;
   bool _isLoading = true;
+
+  late AnimationController _lightningController;
+  final List<_LightningBolt> _bolts = [];
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+
+    final rng = Random();
+    for (int i = 0; i < 5; i++) {
+      _bolts.add(_LightningBolt.random(rng));
+    }
+    _lightningController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _lightningController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -34,18 +56,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFF0C0C0F),
+        backgroundColor: Color(0xFF08083A),
         body: Center(
-          child: CircularProgressIndicator(color: AppTheme.primary),
+          child: CircularProgressIndicator(color: _gold),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C0C0F),
+      backgroundColor: const Color(0xFF08083A),
       body: Stack(
         children: [
-          // Background glow
+          // Top glow
           Positioned(
             top: -60,
             left: 0,
@@ -57,9 +79,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   center: Alignment.topCenter,
                   radius: 0.9,
                   colors: [
-                    AppTheme.primary.withOpacity(0.08),
-                    Colors.transparent
+                    _gold.withOpacity(0.08),
+                    Colors.transparent,
                   ],
+                ),
+              ),
+            ),
+          ),
+
+          // Lightning bolts
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _lightningController,
+              builder: (_, __) => CustomPaint(
+                painter: _LightningPainter(
+                  bolts: _bolts,
+                  progress: _lightningController.value,
                 ),
               ),
             ),
@@ -68,14 +103,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final maxWidth = 450.0;
-
                 return Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 24),
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxWidth),
+                      constraints: const BoxConstraints(maxWidth: 450),
                       child: Column(
                         children: [
                           // Header
@@ -100,12 +133,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               const SizedBox(width: 16),
                               const Text(
-                                'GAME SETTINGS',
+                                '⚡ GAME SETTINGS',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 3,
-                                  color: Colors.white,
+                                  color: _gold,
                                 ),
                               ),
                             ],
@@ -113,7 +146,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Settings sections
                           _buildGameplaySection(),
                           const SizedBox(height: 24),
                           _buildAudioSection(),
@@ -136,36 +168,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.5),
+        border: Border.all(color: _gold.withOpacity(0.15), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.sports_esports_rounded,
-                  color: AppTheme.primary, size: 20),
+              Icon(Icons.sports_esports_rounded, color: _gold, size: 20),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'GAMEPLAY',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 2,
-                  color: AppTheme.primary,
+                  color: _gold,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-
-          // Win Target
           _buildWinTargetSelector(),
           const SizedBox(height: 16),
-
-          // AI Difficulty
           _buildAIDifficultySelector(),
         ],
       ),
@@ -176,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.5),
       ),
@@ -185,22 +212,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.volume_up_rounded, color: AppTheme.primary, size: 20),
+              Icon(Icons.volume_up_rounded, color: _gold, size: 20),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'AUDIO',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 2,
-                  color: AppTheme.primary,
+                  color: _gold,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-
-          // Background Music
           _buildSettingToggle(
             'Background Music',
             'Enable menu background music',
@@ -225,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.5),
       ),
@@ -234,22 +259,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.settings_rounded, color: AppTheme.primary, size: 20),
+              Icon(Icons.settings_rounded, color: _gold, size: 20),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'ACTIONS',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 2,
-                  color: AppTheme.primary,
+                  color: _gold,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          // FIX: wrap in SizedBox.expand so the button fills available width
-          // and the label text doesn't overflow its bounds
           SizedBox(
             width: double.infinity,
             child: FWButton(
@@ -260,9 +283,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await _settings.resetToDefaults();
                 setState(() {});
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Settings reset to defaults'),
-                    backgroundColor: AppTheme.primary,
+                  const SnackBar(
+                    content: Text('Settings reset to defaults'),
+                    backgroundColor: _gold,
                   ),
                 );
               },
@@ -310,12 +333,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primary.withOpacity(0.15)
+                      ? _gold.withOpacity(0.12)
                       : Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
-                        ? AppTheme.primary.withOpacity(0.50)
+                        ? _gold.withOpacity(0.50)
                         : Colors.white.withOpacity(0.10),
                   ),
                 ),
@@ -324,9 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: isSelected
-                        ? AppTheme.primary
-                        : Colors.white.withOpacity(0.60),
+                    color: isSelected ? _gold : Colors.white.withOpacity(0.60),
                   ),
                 ),
               ),
@@ -370,12 +391,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primary.withOpacity(0.10)
+                      ? _gold.withOpacity(0.08)
                       : Colors.white.withOpacity(0.03),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
-                        ? AppTheme.primary.withOpacity(0.30)
+                        ? _gold.withOpacity(0.35)
                         : Colors.white.withOpacity(0.06),
                   ),
                 ),
@@ -391,7 +412,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: isSelected
-                                  ? AppTheme.primary
+                                  ? _gold
                                   : Colors.white.withOpacity(0.80),
                             ),
                           ),
@@ -408,9 +429,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     if (isSelected)
-                      Icon(
+                      const Icon(
                         Icons.check_circle_rounded,
-                        color: AppTheme.primary,
+                        color: _gold,
                         size: 20,
                       ),
                   ],
@@ -441,7 +462,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppTheme.primary, size: 20),
+            Icon(icon, color: _gold, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -470,12 +491,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppTheme.primary,
-              activeTrackColor: AppTheme.primary.withOpacity(0.30),
+              activeColor: _gold,
+              activeTrackColor: _gold.withOpacity(0.30),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lightning — same as SplashScreen & GameScreen
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LightningBolt {
+  final List<Offset> points;
+  final double triggerPhase;
+  final Color color;
+  final double opacity;
+
+  const _LightningBolt({
+    required this.points,
+    required this.triggerPhase,
+    required this.color,
+    required this.opacity,
+  });
+
+  factory _LightningBolt.random(Random rng) {
+    final startX = rng.nextDouble();
+    final points = <Offset>[];
+    double x = startX;
+    double y = 0;
+    final steps = rng.nextInt(5) + 5;
+    for (int i = 0; i <= steps; i++) {
+      points.add(Offset(x, y));
+      x += (rng.nextDouble() - 0.5) * 0.25;
+      x = x.clamp(0.0, 1.0);
+      y += 1 / steps;
+    }
+    return _LightningBolt(
+      points: points,
+      triggerPhase: rng.nextDouble(),
+      color: rng.nextBool() ? const Color(0xFF00C8FF) : const Color(0xFFB066FF),
+      opacity: rng.nextDouble() * 0.35 + 0.15,
+    );
+  }
+}
+
+class _LightningPainter extends CustomPainter {
+  final List<_LightningBolt> bolts;
+  final double progress;
+
+  const _LightningPainter({required this.bolts, required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final bolt in bolts) {
+      final dist = (progress - bolt.triggerPhase).abs();
+      if (dist > 0.06 && dist < 0.94) continue;
+
+      final flickerDist = dist < 0.5 ? dist : 1.0 - dist;
+      final alpha = (1.0 - flickerDist / 0.06).clamp(0.0, 1.0);
+      if (alpha <= 0) continue;
+
+      final paint = Paint()
+        ..color = bolt.color.withOpacity(bolt.opacity * alpha)
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+      final path = Path();
+      for (int i = 0; i < bolt.points.length; i++) {
+        final p = Offset(
+          bolt.points[i].dx * size.width,
+          bolt.points[i].dy * size.height,
+        );
+        i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+      }
+      canvas.drawPath(path, paint);
+
+      // Bright white core
+      paint
+        ..color = Colors.white.withOpacity(0.6 * alpha)
+        ..strokeWidth = 0.6
+        ..maskFilter = null;
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LightningPainter old) => old.progress != progress;
 }

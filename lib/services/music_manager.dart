@@ -103,6 +103,34 @@ class MusicManager {
     }
   }
 
+  Future<void> fadeOutAndPause({
+    Duration duration = const Duration(milliseconds: 600),
+    int steps = 20,
+  }) async {
+    if (!_isPlaying || _audioPlayer == null) {
+      print('[MusicManager] Music not playing, cannot fade out');
+      return;
+    }
+
+    try {
+      _initAudioPlayer();
+      print('[MusicManager] Fading out music...');
+
+      final stepDuration = duration ~/ steps;
+      for (var i = 1; i <= steps; i++) {
+        final volume = (1.0 - (i / steps)).clamp(0.0, 1.0);
+        await _audioPlayer?.setVolume(volume);
+        await Future.delayed(stepDuration);
+      }
+
+      await _audioPlayer?.pause();
+      _isPaused = true;
+      print('[MusicManager] ✓ Music faded out and paused');
+    } catch (e) {
+      print('[MusicManager] Error fading out: $e');
+    }
+  }
+
   Future<void> resume() async {
     if (!_isPlaying) {
       print('[MusicManager] Music not playing, cannot resume');

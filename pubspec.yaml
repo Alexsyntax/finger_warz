@@ -34,6 +34,7 @@ flutter:
     - assets/icon/icon.png
     - assets/hands/
     - assets/music/background.mp3
+    - lib/images/background.png
 
   fonts:
     - family: PressStart2P

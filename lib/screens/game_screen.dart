@@ -30,6 +30,9 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+  // Gold accent — matches splash screen shimmer/loader/spark color
+  static const Color _gold = Color(0xFFFFD700);
+
   late int _winTarget;
   int _player1Score = 0;
   int _player2Score = 0;
@@ -54,6 +57,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late AnimationController _progressAnimController;
   late Animation<double> _p1ProgressAnim;
   late Animation<double> _p2ProgressAnim;
+
+  // Lightning
+  late AnimationController _lightningController;
+  late Animation<double> _lightningAnim;
+  final List<_LightningBolt> _bolts = [];
 
   @override
   void initState() {
@@ -86,6 +94,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _p2ProgressAnim = Tween<double>(begin: 0, end: 0).animate(CurvedAnimation(
         parent: _progressAnimController, curve: Curves.easeOutCubic));
 
+    // Lightning
+    final rng = Random();
+    for (int i = 0; i < 5; i++) {
+      _bolts.add(_LightningBolt.random(rng));
+    }
+    _lightningController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3500),
+    )..repeat();
+    _lightningAnim =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_lightningController);
+
     _pauseMusic();
   }
 
@@ -113,6 +133,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _resultAnimController.dispose();
     _gameOverAnimController.dispose();
     _progressAnimController.dispose();
+    _lightningController.dispose();
     _resumeMusic();
     super.dispose();
   }
@@ -133,7 +154,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF111118),
+            color: const Color(0xFF0D0D2B),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: Colors.white.withOpacity(0.10),
@@ -242,7 +263,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         _dialogStatCell(
                           widget.playerName,
                           '$_player1Score',
-                          AppTheme.primary,
+                          _gold,
                         ),
                         Text(
                           '—',
@@ -254,9 +275,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         _dialogStatCell(
                           _getOpponentName(),
                           '$_player2Score',
-                          _isAIMode()
-                              ? Colors.white.withOpacity(0.45)
-                              : AppTheme.primary,
+                          _isAIMode() ? Colors.white.withOpacity(0.45) : _gold,
                         ),
                       ],
                     ),
@@ -268,7 +287,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
                   children: [
-                    // Keep playing — primary
                     SizedBox(
                       width: double.infinity,
                       child: FWButton(
@@ -278,7 +296,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Quit — ghost / destructive
                     SizedBox(
                       width: double.infinity,
                       child: GestureDetector(
@@ -531,7 +548,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final isPlayer1Winner = _player1Score >= _winTarget;
 
-    // ── Wrap entire scaffold in PopScope to intercept back gestures/button ──
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -542,10 +558,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0C0C0F),
+        // ── Deep navy — matches splash screen background ──
+        backgroundColor: const Color(0xFF08083A),
         body: Stack(
           children: [
-            // Top glow
+            // Top glow — gold tint like splash sparks
             Positioned(
               top: 0,
               left: 0,
@@ -557,9 +574,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     center: Alignment.topCenter,
                     radius: 0.9,
                     colors: [
-                      AppTheme.primary.withOpacity(0.10),
+                      _gold.withOpacity(0.08),
                       Colors.transparent,
                     ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Lightning bolts — same as splash screen
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _lightningAnim,
+                builder: (_, __) => CustomPaint(
+                  painter: _LightningPainter(
+                    bolts: _bolts,
+                    progress: _lightningController.value,
                   ),
                 ),
               ),
@@ -655,7 +685,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 3,
-                color: AppTheme.primary.withOpacity(0.80),
+                color: _gold.withOpacity(0.85),
               ),
             ),
             const SizedBox(height: 2),
@@ -672,21 +702,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ],
         ),
         const Spacer(),
+        // Win target badge — gold accent
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.10),
+            color: _gold.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primary.withOpacity(0.22)),
+            border: Border.all(color: _gold.withOpacity(0.30)),
           ),
           child: Center(
             child: Text(
               '$_winTarget',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
-                color: AppTheme.primary,
+                color: _gold,
                 height: 1,
               ),
             ),
@@ -713,12 +744,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(23),
         child: Row(
           children: [
+            // ── Player 1 side — gold accent top border ──
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(
                     vertical: isCompact ? 16 : 22, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.05),
+                  color: _gold.withOpacity(0.04),
+                  border: Border(
+                    top: BorderSide(
+                      color: _gold.withOpacity(0.30),
+                      width: 2,
+                    ),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -726,20 +764,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.12),
+                        color: _gold.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: AppTheme.primary.withOpacity(0.25)),
+                        border: Border.all(color: _gold.withOpacity(0.35)),
                       ),
                       child: Text(
                         widget.playerName.length > 9
                             ? '${widget.playerName.substring(0, 9)}…'
                             : widget.playerName.toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.5,
-                          color: AppTheme.primary,
+                          color: _gold,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -750,7 +787,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       style: TextStyle(
                         fontSize: isCompact ? 52 : 64,
                         fontWeight: FontWeight.w900,
-                        color: AppTheme.primary,
+                        color: _gold,
                         height: 1.0,
                       ),
                     ),
@@ -771,7 +808,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                     fontSize: 9,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 1.5,
-                                    color: AppTheme.primary.withOpacity(0.7),
+                                    color: _gold.withOpacity(0.7),
                                   ),
                                 ),
                               ],
@@ -782,7 +819,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                               child: Center(
                                 child: Icon(Icons.back_hand_rounded,
                                     size: handSize * 0.55,
-                                    color: AppTheme.primary.withOpacity(0.18)),
+                                    color: _gold.withOpacity(0.18)),
                               ),
                             ),
                     ),
@@ -790,6 +827,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
+            // ── VS divider ──
             Container(
               width: 48,
               decoration: BoxDecoration(
@@ -842,6 +880,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
+            // ── Player 2 / AI side — unchanged muted style ──
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -881,7 +920,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         fontWeight: FontWeight.w900,
                         color: _isAIMode()
                             ? Colors.white.withOpacity(0.45)
-                            : AppTheme.primary,
+                            : _gold,
                         height: 1.0,
                       ),
                     ),
@@ -946,7 +985,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1,
-                      color: AppTheme.primary.withOpacity(0.6),
+                      color: _gold.withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -961,7 +1000,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           child: Container(
                             height: 5,
                             decoration: BoxDecoration(
-                              color: AppTheme.primary,
+                              // Gold gradient — matches splash loader bar
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFD700), Color(0xFFFF6A00)],
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -983,8 +1025,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1,
-                      color: (_isAIMode() ? Colors.white : AppTheme.primary)
-                          .withOpacity(0.6),
+                      color:
+                          (_isAIMode() ? Colors.white : _gold).withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1002,7 +1044,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             decoration: BoxDecoration(
                               color: _isAIMode()
                                   ? Colors.white.withOpacity(0.35)
-                                  : AppTheme.primary,
+                                  : _gold,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -1087,10 +1129,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.07),
+        color: _gold.withOpacity(0.07),
         borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: AppTheme.primary.withOpacity(0.22), width: 1.5),
+        border: Border.all(color: _gold.withOpacity(0.22), width: 1.5),
       ),
       child: Row(
         children: [
@@ -1098,24 +1139,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.12),
+              color: _gold.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.phone_iphone_rounded,
-                size: 20, color: AppTheme.primary),
+            child:
+                const Icon(Icons.phone_iphone_rounded, size: 20, color: _gold),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'PASS THE PHONE',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 2,
-                    color: AppTheme.primary,
+                    color: _gold,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1203,12 +1244,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         padding: const EdgeInsets.symmetric(vertical: 26),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primary.withOpacity(0.13)
+              ? _gold.withOpacity(0.10)
               : Colors.white.withOpacity(0.04),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primary.withOpacity(0.55)
+                ? _gold.withOpacity(0.50)
                 : Colors.white.withOpacity(0.08),
             width: isSelected ? 2.0 : 1.5,
           ),
@@ -1224,9 +1265,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 fontSize: 9,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.5,
-                color: isSelected
-                    ? AppTheme.primary
-                    : Colors.white.withOpacity(0.30),
+                color: isSelected ? _gold : Colors.white.withOpacity(0.30),
               ),
             ),
           ],
@@ -1264,7 +1303,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF111118),
+                    color: const Color(0xFF0D0D2B),
                     borderRadius: BorderRadius.circular(32),
                     border: Border.all(
                         color: accentColor.withOpacity(0.28), width: 1.5),
@@ -1360,8 +1399,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
                         child: Row(
                           children: [
-                            _buildStatCell(widget.playerName, '$_player1Score',
-                                AppTheme.primary),
+                            _buildStatCell(
+                                widget.playerName, '$_player1Score', _gold),
                             _buildStatCell('DRAWS', '$_draws',
                                 Colors.white.withOpacity(0.30)),
                             _buildStatCell(
@@ -1369,7 +1408,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                 '$_player2Score',
                                 _isAIMode()
                                     ? Colors.white.withOpacity(0.40)
-                                    : AppTheme.primary),
+                                    : _gold),
                           ],
                         ),
                       ),
@@ -1455,4 +1494,88 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lightning — ported directly from SplashScreen
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LightningBolt {
+  final List<Offset> points;
+  final double triggerPhase;
+  final Color color;
+  final double opacity;
+
+  const _LightningBolt({
+    required this.points,
+    required this.triggerPhase,
+    required this.color,
+    required this.opacity,
+  });
+
+  factory _LightningBolt.random(Random rng) {
+    final startX = rng.nextDouble();
+    final points = <Offset>[];
+    double x = startX;
+    double y = 0;
+    final steps = rng.nextInt(5) + 5;
+    for (int i = 0; i <= steps; i++) {
+      points.add(Offset(x, y));
+      x += (rng.nextDouble() - 0.5) * 0.25;
+      x = x.clamp(0.0, 1.0);
+      y += 1 / steps;
+    }
+    return _LightningBolt(
+      points: points,
+      triggerPhase: rng.nextDouble(),
+      color: rng.nextBool() ? const Color(0xFF00C8FF) : const Color(0xFFB066FF),
+      opacity: rng.nextDouble() * 0.35 + 0.15,
+    );
+  }
+}
+
+class _LightningPainter extends CustomPainter {
+  final List<_LightningBolt> bolts;
+  final double progress;
+
+  const _LightningPainter({required this.bolts, required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final bolt in bolts) {
+      final dist = (progress - bolt.triggerPhase).abs();
+      if (dist > 0.06 && dist < 0.94) continue;
+
+      final flickerDist = dist < 0.5 ? dist : 1.0 - dist;
+      final alpha = (1.0 - flickerDist / 0.06).clamp(0.0, 1.0);
+      if (alpha <= 0) continue;
+
+      final paint = Paint()
+        ..color = bolt.color.withOpacity(bolt.opacity * alpha)
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+      final path = Path();
+      for (int i = 0; i < bolt.points.length; i++) {
+        final p = Offset(
+          bolt.points[i].dx * size.width,
+          bolt.points[i].dy * size.height,
+        );
+        i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+      }
+      canvas.drawPath(path, paint);
+
+      // Bright white core
+      paint
+        ..color = Colors.white.withOpacity(0.6 * alpha)
+        ..strokeWidth = 0.6
+        ..maskFilter = null;
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LightningPainter old) => old.progress != progress;
 }
