@@ -346,34 +346,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
 
-              // Shimmer subtitle
+              // ── FIX: centered subtitle row, text wrapped in Flexible
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _divLine(right: true),
                   const SizedBox(width: 8),
-                  AnimatedBuilder(
-                    animation: _shimmerController,
-                    builder: (_, __) => ShaderMask(
-                      shaderCallback: (b) => LinearGradient(
-                        stops: [
-                          (_shimmer.value - 0.3).clamp(0.0, 1.0),
-                          _shimmer.value.clamp(0.0, 1.0),
-                          (_shimmer.value + 0.3).clamp(0.0, 1.0),
-                        ],
-                        colors: const [
-                          Color(0xFFFFD700),
-                          Colors.white,
-                          Color(0xFFFFD700)
-                        ],
-                      ).createShader(b),
-                      child: const Text(
-                        'ROCK · PAPER · SCISSORS',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2.5,
-                          color: Colors.white,
+                  Flexible(
+                    child: AnimatedBuilder(
+                      animation: _shimmerController,
+                      builder: (_, __) => ShaderMask(
+                        shaderCallback: (b) => LinearGradient(
+                          stops: [
+                            (_shimmer.value - 0.3).clamp(0.0, 1.0),
+                            _shimmer.value.clamp(0.0, 1.0),
+                            (_shimmer.value + 0.3).clamp(0.0, 1.0),
+                          ],
+                          colors: const [
+                            Color(0xFFFFD700),
+                            Colors.white,
+                            Color(0xFFFFD700)
+                          ],
+                        ).createShader(b),
+                        child: const Text(
+                          'ROCK · PAPER · SCISSORS',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2.5,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
